@@ -17,6 +17,28 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+async function run() {
+  try {
+    const servicesCollection = client.db("ksInterior").collection("services");
+    // 3 services api
+    app.get("/services", async (req, res) => {
+      const query = {};
+      const cursor = servicesCollection.find(query);
+      const services = await cursor.limit(3).toArray();
+      res.send(services);
+    });
+    // all services api
+    app.get("/allservices", async (req, res) => {
+      const query = {};
+      const cursor = servicesCollection.find(query);
+      const services = await cursor.toArray();
+      res.send(services);
+    });
+  } finally {
+  }
+}
+run().catch((error) => console.log(error));
+
 app.get("/", (req, res) => {
   res.send("ks interior server created");
 });
