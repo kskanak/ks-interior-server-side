@@ -47,12 +47,30 @@ async function run() {
     });
 
     //  reviews api
-    app.get("/reviews", async (req, res) => {
-      const query = {};
+
+    app.get("/reviews/:id", async (req, res) => {
+      const id = parseInt(req.params.id);
+      const query = { service_id: id };
       const cursor = reviewCollection.find(query);
       const reviews = await cursor.toArray();
       res.send(reviews);
     });
+
+    // review by email id and service id
+
+    app.get("/reviews", async (req, res) => {
+      let query = {};
+      if (req.query.email) {
+        query = {
+          email: req.query.email,
+        };
+      }
+      const filter = reviewCollection.find(query);
+      const result = await filter.toArray();
+      res.send(result);
+    });
+
+    // post review
     app.post("/reviews", async (req, res) => {
       const review = req.body;
       const result = await reviewCollection.insertOne(review);
