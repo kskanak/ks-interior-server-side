@@ -46,8 +46,14 @@ async function run() {
       res.send(service);
     });
 
-    //  reviews api
+    // service post api
+    app.post("/services", async (req, res) => {
+      const service = req.body;
+      const result = await servicesCollection.insertOne(service);
+      res.send(result);
+    });
 
+    //  reviews api
     app.get("/reviews/:id", async (req, res) => {
       const id = parseInt(req.params.id);
       const query = { service_id: id };
