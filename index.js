@@ -1,5 +1,6 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const app = express();
 const port = process.env.PORT || 5000;
 const cors = require("cors");
@@ -17,10 +18,34 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+async function verify(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send({ message: "Unauthorized access" });
+  }
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRECT, function (err, decoded) {
+    if (err) {
+      return res.status(401).send({ message: "Unauthorized access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
+
 async function run() {
   try {
     const servicesCollection = client.db("ksInterior").collection("services");
     const reviewCollection = client.db("ksInterior").collection("reviews");
+
+    // JWT TOKEN
+    app.post("/jwt", (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRECT, {
+        expiresIn: "10d",
+      });
+      res.send({ token });
+    });
 
     // 3 services api
     app.get("/services", async (req, res) => {
@@ -64,7 +89,12 @@ async function run() {
 
     // review by email id
 
-    app.get("/reviews", async (req, res) => {
+    app.get("/reviews", verify, async (req, res) => {
+      const decoded = req.decoded;
+      if (decoded.email !== req.query.email) {
+        res.status(403).send({ message: "Unauthorized access" });
+      }
+      console.log(decoded);
       let query = {};
       if (req.query.email) {
         query = {
