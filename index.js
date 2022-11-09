@@ -26,7 +26,7 @@ async function run() {
     app.get("/services", async (req, res) => {
       const query = {};
       const cursor = servicesCollection.find(query);
-      const services = await cursor.limit(3).toArray();
+      const services = await cursor.sort({ _id: -1 }).limit(3).toArray();
       res.send(services);
     });
 
@@ -58,7 +58,7 @@ async function run() {
       const id = parseInt(req.params.id);
       const query = { service_id: id };
       const cursor = reviewCollection.find(query);
-      const reviews = await cursor.toArray();
+      const reviews = await cursor.sort({ time: -1 }).toArray();
       res.send(reviews);
     });
 
