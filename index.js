@@ -94,7 +94,6 @@ async function run() {
       if (decoded.email !== req.query.email) {
         res.status(403).send({ message: "Unauthorized access" });
       }
-
       let query = {};
       if (req.query.email) {
         query = {
